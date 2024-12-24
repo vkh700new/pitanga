@@ -2,6 +2,8 @@
 
 start_time=$(date +%s%N)  # Capture the start time in nanoseconds
 
+printf "removing dir build...\n"
+rm -f build
 printf "making dir build...\n"
 mkdir -p build
 printf "done\n"
@@ -12,10 +14,10 @@ printf "as\n"
 i686-elf-as ../boot.s -o boot.o
 printf "done\n"
 printf "g++\n"
-i686-elf-g++ -c ../kernel.cpp -o kernel.o -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti
+i686-elf-g++ -c ../kernel.cpp ../drivers/io.h ../drivers/io.cpp ../drivers/keyboard.cpp ../drivers/keyboard.h ../drivers/timer.cpp ../drivers/timer.h -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti -fpermissive
 printf "done\n"
 printf "gcc\n"
-i686-elf-gcc -T ../linker.ld -o grub/boot/latest.bin -ffreestanding -O2 -nostdlib boot.o kernel.o -lgcc
+i686-elf-gcc -T ../linker.ld -o grub/boot/latest.bin -ffreestanding -O2 -nostdlib boot.o io.o keyboard.o kernel.o timer.o -lgcc
 printf "done\n"
 printf "making dir grub...\n"
 mkdir -p grub
@@ -47,12 +49,6 @@ printf "done\n"
 printf "entering ../..\n"
 cd ../..
 printf "done\n"
-printf "grub-mkrescue\n"
-grub-mkrescue -o latest.iso .
-printf "done\n"
-printf "entering ../..\n"
-cd ../..
-printf "done\n"
 
 end_time=$(date +%s%N)  # Capture the end time in nanoseconds
 elapsed_time=$((end_time - start_time))
@@ -64,6 +60,23 @@ minutes=$(( (elapsed_seconds % 3600) / 60))
 seconds=$((elapsed_seconds % 60))
 
 printf "pitanga kernel compiled successfully in %02d:%02d:%02d.%03d\n" $hours $minutes $seconds $elapsed_milliseconds
+
+read -p "kernel compiled, make pitanga basic edition (bootable)? (y/n): " response
+
+response=$(echo "$response" | tr '[:upper:]' '[:lower:]')
+
+if [[ "$response" == "y" ]]; then
+    printf "making bootable image\n"
+else
+    exit
+fi
+
+printf "grub-mkrescue\n"
+grub-mkrescue -o latest.iso .
+printf "done\n"
+printf "entering ../..\n"
+cd ../..
+printf "done\n"
 
 read -p "run build in qemu? (y/n): " response
 

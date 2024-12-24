@@ -1,6 +1,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include "drivers/keyboard.h"
+#include "drivers/timer.h"
+#include "drivers/io.h"
 
 #if defined(__linux__)
 #error "You are not using a cross-compiler, you will most certainly run into trouble"
@@ -114,5 +117,27 @@ extern "C" void kernel_main(void)
 	terminal_writestring("pitangaKernel\n");
 	terminal_setcolor(VGA_COLOR_WHITE);
         terminal_writestring("=============\n");
-}
+        
+        outb(0x3D4, 0x0A);
+        outb(0x3D5, 0x20);
 
+        char last_key = 0;
+        for (;;) {
+          char k = get_kbk();
+          if (k != -1) {
+            if (k != last_key) {
+              terminal_putchar(k);
+              last_key = k;
+              wait(75);
+            } else {
+              wait(10);
+              char kt = get_kbk();
+              if (kt != -1) {
+                terminal_putchar(kt);
+              }
+            }
+          } else {
+            last_key = 0;
+          }
+        }
+}
