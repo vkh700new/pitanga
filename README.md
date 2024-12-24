@@ -1,3 +1,4 @@
+![pitanga logo](./pitanga.bmp)
 # pitanga
 a kernel that has basic drivers and can run Unix applications
 # indev
