@@ -1,6 +1,6 @@
 ![pitanga logo](./pitanga.bmp)
 # pitanga
-a kernel that has basic drivers and can run Unix applications
+a kernel that will have basic drivers and will run Unix applications
 # indev
 keyboard driver  
 vga driver   
